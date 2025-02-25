@@ -58,7 +58,7 @@ const App: React.FC = () => {
         .getSetting("app_settings")
         .then((settings) => {
           if (settings) {
-            setAppSettings(settings);
+            setAppSettings(settings as AppSettings);
             // If there are no settings, this is probably a first launch
             // We'll also check if the onboarding has been completed
             window.electronAPI
@@ -78,29 +78,32 @@ const App: React.FC = () => {
       window.electronAPI
         .checkAudioPermissions()
         .then((result) => {
-          if (result.success) {
-            setAudioPermissions(result.permissions);
+          if (result.success && result.permissions) {
+            setAudioPermissions({
+              microphone: result.permissions.microphone,
+              systemAudio: result.permissions.systemAudio
+            });
           }
         })
         .catch(console.error);
 
       // Listen for transcription updates
       const unsubscribeTranscription = window.electronAPI.getTranscription(
-        (event, transcript) => {
-          setTranscripts((prev) => [...prev, transcript]);
+        (_event, transcript) => {
+          setTranscripts((prev) => [...prev, transcript as Transcript]);
         },
       );
 
       // Subscribe to audio capture status updates
       const unsubscribeAudioStatus = window.electronAPI.onAudioCaptureStatus(
-        (event, status: string) => {
+        (_event, status: string) => {
           setTranscriptionStatus(status as TranscriptionStatus);
         }
       );
 
       // Listen for transcription status changes (legacy event-based approach)
       const handleTranscriptionStatus = (
-        event: any,
+        _event: any,
         status: TranscriptionStatus,
       ) => {
         setTranscriptionStatus(status);
@@ -111,7 +114,10 @@ const App: React.FC = () => {
       );
 
       // Listen for AI responses
-      const handleAIResponse = (event: any, response: AIResponse) => {
+      const handleAIResponse = (
+        _event: any, 
+        response: AIResponse
+      ) => {
         setResponses((prev) => [...prev, response]);
       };
       window.addEventListener(
@@ -120,7 +126,10 @@ const App: React.FC = () => {
       );
 
       // Listen for AI status changes
-      const handleAIStatus = (event: any, status: AIResponseStatus) => {
+      const handleAIStatus = (
+        _event: any, 
+        status: AIResponseStatus
+      ) => {
         setResponseStatus(status);
       };
       window.addEventListener("llm-status", handleAIStatus as EventListener);
@@ -150,8 +159,11 @@ const App: React.FC = () => {
       try {
         // Check permissions before starting capture
         const permissionResult = await window.electronAPI.checkAudioPermissions();
-        if (permissionResult.success) {
-          setAudioPermissions(permissionResult.permissions);
+        if (permissionResult.success && permissionResult.permissions) {
+          setAudioPermissions({
+            microphone: permissionResult.permissions.microphone,
+            systemAudio: permissionResult.permissions.systemAudio
+          });
           
           // If we don't have any permissions and haven't shown the dialog yet
           if (!permissionResult.permissions.microphone && 

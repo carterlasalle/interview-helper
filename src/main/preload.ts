@@ -49,6 +49,16 @@ try {
       };
     },
 
+    // Audio level updates
+    onAudioLevelUpdate: (callback: (event: IpcRendererEvent, data: { level: number, active: boolean }) => void) => {
+      const subscription = (_event: IpcRendererEvent, data: { level: number, active: boolean }) =>
+        callback(_event, data);
+      ipcRenderer.on("audio-level-update", subscription);
+      return () => {
+        ipcRenderer.removeListener("audio-level-update", subscription);
+      };
+    },
+
     // Transcription related
     getTranscription: (callback: (event: IpcRendererEvent, transcript: string) => void) => {
       const subscription = (_event: IpcRendererEvent, transcript: string) =>

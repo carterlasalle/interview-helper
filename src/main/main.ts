@@ -12,15 +12,37 @@ process.env.ELECTRON_DEBUG_LEVEL = 'info';
 
 // Enable ScreenCaptureKit for audio capture on macOS
 if (process.platform === 'darwin') {
-  // Add flags needed for audio capture
-  app.commandLine.appendSwitch('enable-features', 'ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma');
+  // Add flags needed for audio capture on macOS
+  app.commandLine.appendSwitch('enable-features', 'ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,ScreenCaptureKitAudio,MacAudioCapture');
   
-  // Disable browser security restrictions
-  app.commandLine.appendSwitch('disable-web-security');
-  app.commandLine.appendSwitch('allow-running-insecure-content');
+  // Enable proper audio capture for newer macOS versions
+  app.commandLine.appendSwitch('use-screen-capture-kit');
+  app.commandLine.appendSwitch('use-screen-capture-kit-for-window');
+  app.commandLine.appendSwitch('use-screen-capture-kit-for-software-composition');
+  
+  // Use system defaults for permissions, which respect user choices
+  app.commandLine.appendSwitch('use-system-default-media-permissions');
+  
+  // Allow audio capture without user gesture
   app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
   
+  // Disable browser security restrictions that might affect audio capture
+  app.commandLine.appendSwitch('disable-web-security');
+  app.commandLine.appendSwitch('allow-running-insecure-content');
+  
   console.log('Enabled ScreenCaptureKit features on macOS');
+  
+  // On macOS, try to detect screen capture permission at startup
+  try {
+    const { systemPreferences } = require('electron');
+    const screenStatus = systemPreferences.getMediaAccessStatus("screen");
+    console.log(`Initial screen capture permission status: ${screenStatus}`);
+    
+    const micStatus = systemPreferences.getMediaAccessStatus("microphone");
+    console.log(`Initial microphone permission status: ${micStatus}`);
+  } catch (error) {
+    console.error('Error checking permissions:', error);
+  }
 }
 
 // Listen for unhandled promise rejections

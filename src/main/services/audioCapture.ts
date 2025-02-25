@@ -7,10 +7,21 @@ import {
   openAudioPreferences
 } from "../utils/permissions";
 
+// Define an interface for audio devices since MediaDeviceInfo is not available in main process
+interface AudioDevice {
+  deviceId: string;
+  kind: string;
+  label: string;
+  groupId: string;
+}
+
 let audioBuffer: Buffer[] = [];
 let isCapturing = false;
 let captureWindow: BrowserWindow | null = null;
 let audioStream: any | null = null;
+let audioDataInterval: NodeJS.Timeout | null = null;
+let lastActivity = 0;
+let audioLevels: number[] = [];
 
 // For actual audio capture, we would use native bindings
 // This simplified implementation will focus on permission handling
@@ -32,6 +43,8 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
       });
 
       audioBuffer = [];
+      lastActivity = Date.now();
+      audioLevels = [];
 
       // Check permissions before starting capture
       let permissionsGranted = true;
@@ -105,6 +118,30 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
       }
 
       isCapturing = true;
+
+      // Set up an interval to check audio activity and update UI
+      if (audioDataInterval === null) {
+        audioDataInterval = setInterval(() => {
+          // Check if we've received audio data recently
+          const now = Date.now();
+          const timeSinceLastData = now - lastActivity;
+          
+          if (captureWindow && !captureWindow.isDestroyed()) {
+            // Calculate average audio level for display
+            const avgLevel = audioLevels.length > 0 
+              ? audioLevels.reduce((sum, level) => sum + level, 0) / audioLevels.length 
+              : 0;
+            
+            captureWindow.webContents.send(
+              "audio-level-update",
+              { level: avgLevel, active: timeSinceLastData < 1000 }
+            );
+            
+            // Reset levels for next update
+            audioLevels = [];
+          }
+        }, 200); // Update UI 5 times per second
+      }
 
       if (captureWindow && !captureWindow.isDestroyed()) {
         captureWindow.webContents.send(
@@ -185,6 +222,39 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
     }
   });
 
+  // Listen for audio data from the renderer process
+  ipcMain.on("audio-data", (event, data) => {
+    if (!isCapturing) return;
+    
+    lastActivity = Date.now();
+    
+    if (Buffer.isBuffer(data)) {
+      console.log(`Received audio data: ${data.length} bytes`);
+      
+      // Calculate audio level (simple average of absolute values)
+      let sum = 0;
+      for (let i = 0; i < data.length; i++) {
+        // Normalize to -128 to 127 range and take absolute value
+        sum += Math.abs(data[i] - 128);
+      }
+      // Normalize to 0-1 range
+      const avgLevel = sum / (data.length * 128);
+      audioLevels.push(avgLevel);
+      
+      // Store the audio data for processing
+      audioBuffer.push(data);
+      
+      // In a real implementation, we'd send this data to a transcription service
+      // For now, just log it
+      if (audioBuffer.length > 50) {
+        // Keep buffer size manageable by removing oldest data
+        audioBuffer.shift();
+      }
+    } else {
+      console.warn('Received non-buffer audio data', typeof data);
+    }
+  });
+
   app.on("before-quit", async () => {
     if (isCapturing) {
       await stopAudioCapture();
@@ -197,28 +267,60 @@ const startSystemAudioCapture = async (deviceId?: string): Promise<boolean> => {
   
   try {
     // Get available screen sources which can include audio
-    const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] });
+    const sources = await desktopCapturer.getSources({ 
+      types: ['screen', 'window'],
+      fetchWindowIcons: true,
+      thumbnailSize: { width: 0, height: 0 } // Skip thumbnails to improve performance
+    });
     
-    // Find the system audio source (usually named "System Audio" on macOS)
-    const systemAudioSource = sources.find(source => 
-      source.name.toLowerCase().includes('system') || 
-      source.name.toLowerCase().includes('audio'));
+    // Log all available sources for debugging
+    console.log(`Found ${sources.length} potential sources:`, 
+      sources.map(s => `${s.name} (${s.id})`).join(', '));
+    
+    // For macOS, try different strategies to find the appropriate screen source
+    let systemAudioSource = null;
+    
+    // First strategy: look for specific names typical for system audio sources
+    systemAudioSource = sources.find(source => 
+      source.name.toLowerCase().includes('system audio') || 
+      source.name.toLowerCase() === 'entire screen' ||
+      source.name.toLowerCase().includes('display') ||
+      source.name.toLowerCase().includes('screen') ||
+      source.id.includes('screen:'));
+    
+    // Second strategy: on macOS, take the first 'screen' source if available
+    if (!systemAudioSource) {
+      systemAudioSource = sources.find(source => 
+        source.id.includes('screen:'));
+    }
+    
+    // Last resort: just take the first available source
+    if (!systemAudioSource && sources.length > 0) {
+      console.log("Using first available source as fallback");
+      systemAudioSource = sources[0];
+    }
     
     if (!systemAudioSource) {
-      console.error("No system audio source found");
+      console.error("No system audio source found. Available sources:", 
+        sources.map(s => `${s.name} (${s.id})`).join(', '));
+      
+      // Add more diagnostic info
+      if (process.platform === 'darwin') {
+        console.log("On macOS, make sure Screen Recording permission is granted in System Preferences > Security & Privacy > Privacy > Screen Recording");
+      }
+      
       return false;
     }
     
-    console.log("Found system audio source:", systemAudioSource.name);
+    console.log("Using source for system audio:", systemAudioSource.name, systemAudioSource.id);
     
     // Pass the source ID to the renderer to create the audio stream
-    // The actual audio capture will happen in the renderer process
-    // We'll send a message to the renderer to start the capture
     if (captureWindow && !captureWindow.isDestroyed()) {
       captureWindow.webContents.send('start-audio-stream', {
         sourceId: systemAudioSource.id,
         isSystemAudio: true
       });
+      console.log("Sent start-audio-stream message to renderer with sourceId:", systemAudioSource.id);
     }
     
     return true;
@@ -248,50 +350,40 @@ const startMicrophoneCapture = async (deviceId?: string): Promise<boolean> => {
   }
 };
 
-const stopAudioCapture = async (): Promise<boolean> => {
+const stopAudioCapture = async (): Promise<void> => {
   console.log("Stopping audio capture...");
   
-  try {
-    // Send a message to the renderer to stop all audio streams
-    if (captureWindow && !captureWindow.isDestroyed()) {
-      captureWindow.webContents.send('stop-audio-stream');
-    }
-    
-    // Clean up any resources in the main process
-    audioBuffer = [];
-    
-    return true;
-  } catch (error) {
-    console.error("Error stopping audio capture:", error);
-    return false;
+  // Clear the audio processing interval
+  if (audioDataInterval) {
+    clearInterval(audioDataInterval);
+    audioDataInterval = null;
   }
-};
-
-const getAudioDevices = async () => {
-  // For now, return mock devices
-  // In a real implementation, we'd query the system
   
-  return [
-    {
-      id: "system",
-      name: "System Audio",
-      type: "output",
-    },
-    {
-      id: "microphone",
-      name: "Built-in Microphone",
-      type: "input",
-    },
-  ];
-};
-
-const processAudioChunk = (chunk: Buffer) => {
-  // Store the audio chunk for later processing
-  audioBuffer.push(chunk);
-  
-  // Notify the transcription service about the new audio data
+  // Send message to the renderer to stop all audio streams
   if (captureWindow && !captureWindow.isDestroyed()) {
-    captureWindow.webContents.send("audio-data", chunk);
+    captureWindow.webContents.send('stop-audio-stream');
+  }
+  
+  // Reset the audio buffer
+  audioBuffer = [];
+  audioLevels = [];
+};
+
+const getAudioDevices = async (): Promise<AudioDevice[]> => {
+  try {
+    // We would normally query for audio devices here
+    // But for simplicity, we'll just return a placeholder
+    return [
+      {
+        deviceId: 'default',
+        kind: 'audioinput',
+        label: 'Default Microphone',
+        groupId: 'default'
+      }
+    ];
+  } catch (error) {
+    console.error("Error getting audio devices:", error);
+    return [];
   }
 };
 

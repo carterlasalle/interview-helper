@@ -58,6 +58,11 @@ interface ElectronAPI {
   getConversationHistory: () => Promise<unknown>;
   saveConversation: (data: unknown) => Promise<unknown>;
   exportConversation: (id: string, format: string) => Promise<unknown>;
+
+  // Audio level updates
+  onAudioLevelUpdate: (
+    callback: (event: IpcRendererEvent, data: { level: number, active: boolean }) => void
+  ) => () => void;
 }
 
 // Define the window interface
