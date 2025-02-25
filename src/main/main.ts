@@ -34,12 +34,12 @@ const createWindow = async () => {
     } catch (error) {
       console.error("Failed to load development URL:", error);
       // Fallback to production build if development server is not available
-      await mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+      await mainWindow.loadFile(path.join(__dirname, "../renderer/public/index.html"));
     }
   } else {
     // In production, load the built index.html
     console.log("Loading app from production build");
-    await mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+    await mainWindow.loadFile(path.join(__dirname, "../renderer/public/index.html"));
   }
 
   if (!servicesInitialized && mainWindow) {
