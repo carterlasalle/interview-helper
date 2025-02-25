@@ -1,0 +1,255 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.panel-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  height: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .panel-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color-light);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: var(--primary-color);
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.panel-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-idle .status-dot {
+  background-color: var(--gray-400);
+}
+
+.status-listening .status-dot,
+.status-thinking .status-dot {
+  background-color: var(--warning-color);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.status-speaking .status-dot,
+.status-transcribing .status-dot {
+  background-color: var(--success-color);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.status-error .status-dot {
+  background-color: var(--danger-color);
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+.control-panel {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-color-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.input-field {
+  flex: 1;
+  position: relative;
+}
+
+.input-field input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.input-field button {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-field button:hover {
+  color: var(--primary-color-dark);
+}
+
+/* Transcript and Response styling */
+.transcript-item,
+.response-item {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.transcript-item:last-child,
+.response-item:last-child {
+  border-bottom: none;
+}
+
+.transcript-timestamp,
+.response-timestamp {
+  font-size: 0.75rem;
+  color: var(--text-color-light);
+  margin-bottom: 0.25rem;
+}
+
+.transcript-text {
+  line-height: 1.5;
+}
+
+.response-question {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--text-color-emphasis);
+}
+
+.response-answer {
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.response-confidence {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-color-light);
+}
+
+/* Header styling */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: var(--primary-color);
+  color: var(--primary-text);
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.app-logo svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.app-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-version {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.header-button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.header-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+} 

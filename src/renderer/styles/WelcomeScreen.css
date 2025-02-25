@@ -1,0 +1,257 @@
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+}
+
+.welcome-container {
+  background-color: var(--background);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  animation: welcomeAppear 0.5s ease-out;
+  overflow: hidden;
+}
+
+.welcome-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.welcome-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color-emphasis);
+}
+
+.step-indicator {
+  font-size: 0.875rem;
+  color: var(--text-color-light);
+  font-weight: 500;
+}
+
+.welcome-content {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.welcome-content p {
+  margin-top: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  max-width: 600px;
+}
+
+.welcome-footer {
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Feature list styling */
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.feature-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.feature-text h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text-color-emphasis);
+}
+
+.feature-text p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-color-light);
+}
+
+/* API setup styling */
+.api-setup {
+  margin: 2rem 0;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: var(--background-dark);
+  color: var(--text-color);
+}
+
+.input-help {
+  font-size: 0.875rem !important;
+  color: var(--text-color-light) !important;
+  margin-top: 0.5rem !important;
+}
+
+.api-options p {
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.option-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.option-button {
+  display: inline-block;
+  padding: 0.75rem 1.25rem;
+  background-color: var(--background-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.option-button:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  text-decoration: none;
+}
+
+/* Permissions info styling */
+.permissions-info {
+  margin: 1.5rem 0;
+}
+
+.permission-item {
+  margin-bottom: 2rem;
+}
+
+.permission-item h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.1rem;
+  color: var(--text-color-emphasis);
+}
+
+.permission-item p {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+}
+
+.permission-link {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: var(--secondary);
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.permission-link:hover {
+  background-color: var(--secondary-dark);
+  text-decoration: none;
+}
+
+/* Getting started styling */
+.getting-started {
+  margin: 2rem 0;
+}
+
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-text h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  color: var(--text-color-emphasis);
+}
+
+.step-text p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-color-light);
+}
+
+.final-note {
+  background-color: var(--background-dark);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  border-left: 4px solid var(--primary-color);
+}
+
+.final-note p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@keyframes welcomeAppear {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 
