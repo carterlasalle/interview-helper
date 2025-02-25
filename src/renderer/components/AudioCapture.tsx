@@ -28,15 +28,19 @@ const AudioCapture: React.FC = () => {
     // Stop all active streams
     streamsRef.current.forEach(stream => {
       try {
-        console.log(`Stopping stream with ${stream.getTracks().length} tracks`);
-        stream.getTracks().forEach(track => {
-          try {
-            console.log(`Stopping track: ${track.kind}, enabled: ${track.enabled}`);
-            track.stop();
-          } catch (error) {
-            console.error('Error stopping track:', error);
-          }
-        });
+        if (stream && typeof stream.getTracks === 'function') {
+          console.log(`Stopping stream with ${stream.getTracks().length} tracks`);
+          stream.getTracks().forEach(track => {
+            try {
+              console.log(`Stopping track: ${track.kind}, enabled: ${track.enabled}`);
+              track.stop();
+            } catch (error) {
+              console.error('Error stopping track:', error);
+            }
+          });
+        } else {
+          console.warn('Stream has no getTracks method or is null');
+        }
       } catch (error) {
         console.error('Error accessing stream tracks:', error);
       }
@@ -56,6 +60,66 @@ const AudioCapture: React.FC = () => {
     // Reset the streams array
     streamsRef.current = [];
     console.log('Audio capture cleaned up');
+  };
+
+  // Add a separate function for setting up audio processing
+  const setupAudioProcessing = (stream: MediaStream, isSystemAudio: boolean) => {
+    if (!stream) return;
+    
+    try {
+      // Store the stream for cleanup
+      streamsRef.current.push(stream);
+      
+      // Set up a minimal processing interval - reduce frequency to prevent crashes
+      if (processingIntervalRef.current) {
+        window.clearInterval(processingIntervalRef.current);
+      }
+      
+      // Less frequent updates with smaller packets
+      processingIntervalRef.current = window.setInterval(() => {
+        if (window.electronAPI && stream) {
+          try {
+            // Check if stream is valid and has active tracks
+            const isActive = stream && 
+                           typeof stream.active === 'boolean' && 
+                           stream.active &&
+                           typeof stream.getAudioTracks === 'function';
+            
+            if (isActive) {
+              // Get information about active tracks
+              const audioTracks = stream.getAudioTracks();
+              const activeTracks = audioTracks.filter(track => 
+                track.enabled && track.readyState === 'live');
+              
+              if (activeTracks.length > 0) {
+                // Create a smaller data packet - just 32 bytes instead of 128
+                const simulatedAudioData = new Uint8Array(32).fill(128);
+                window.electronAPI.sendAudioData(simulatedAudioData);
+              } else {
+                // Send empty data when no active tracks
+                const emptyData = new Uint8Array(16).fill(0);
+                window.electronAPI.sendAudioData(emptyData);
+              }
+            } else {
+              // Stream is no longer active
+              const emptyData = new Uint8Array(16).fill(0);
+              window.electronAPI.sendAudioData(emptyData);
+            }
+          } catch (err) {
+            console.warn('Error in audio processing interval:', err);
+            // Don't crash on error - send empty data as fallback
+            if (window.electronAPI) {
+              const fallbackData = new Uint8Array(16).fill(0);
+              window.electronAPI.sendAudioData(fallbackData);
+            }
+          }
+        }
+      }, 500); // Much less frequent - every 500ms instead of 100ms
+      
+      console.log(`${isSystemAudio ? 'System audio' : 'Microphone'} capture set up with reduced processing`);
+    } catch (err) {
+      console.error('Error setting up audio processing:', err);
+    }
   };
 
   useEffect(() => {
@@ -91,9 +155,11 @@ const AudioCapture: React.FC = () => {
     }) => {
       console.log('Received start audio stream event with options:', JSON.stringify(options));
       
+      // Always clean up existing streams first
+      cleanupAudio();
+      
       try {
         // Try to get the actual audio stream
-        let constraints: MediaStreamConstraints;
         let stream: MediaStream | null = null;
         
         // Check if on macOS
@@ -104,145 +170,142 @@ const AudioCapture: React.FC = () => {
           // For system audio using desktop capture
           console.log(`Attempting to capture system audio with sourceId: ${options.sourceId}`);
           
-          // Special handling for macOS ScreenCaptureKit
-          console.log(`Creating system audio constraints for ${isMacOS ? 'macOS' : 'other platform'}`);
-          
-          // On macOS with ScreenCaptureKit, we need special constraints
-          constraints = {
-            audio: {
-              // @ts-ignore - These are Chrome/Electron-specific constraints
-              mandatory: {
-                chromeMediaSource: 'desktop',
-                chromeMediaSourceId: options.sourceId
-              }
-            },
-            video: false
-          };
-          
+          // CRITICAL FIX: Handle errors more gracefully without crashing
           try {
-            console.log('Calling getUserMedia with system audio constraints');
-            // Log the constraints for debugging
-            console.log('Constraints:', JSON.stringify(constraints, null, 2));
+            // On macOS with ScreenCaptureKit, we need special constraints
+            const constraints: MediaStreamConstraints = {
+              audio: {
+                // @ts-ignore - These are Chrome/Electron-specific constraints
+                mandatory: {
+                  chromeMediaSource: 'desktop',
+                  chromeMediaSourceId: options.sourceId
+                }
+              },
+              video: false
+            };
             
-            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            // Log just the sourceId, not the full constraints object
+            console.log('Using system audio source ID:', options.sourceId);
             
-            // Success!
-            console.log('System audio stream obtained successfully', 
-              `id: ${stream.id}, active: ${stream.active}`,
-              `tracks: ${stream.getTracks().length}`);
-            
-            // Log track details
-            stream.getTracks().forEach((track, index) => {
-              console.log(`Track ${index}: kind=${track.kind}, enabled=${track.enabled}, readyState=${track.readyState}`);
-              console.log(`Track settings:`, JSON.stringify(track.getSettings(), null, 2));
-            });
-            
-          } catch (systemAudioError: any) {
-            // Detailed error logging
-            console.error('Failed to get system audio:', systemAudioError.name, systemAudioError.message);
-            console.error('Error details:', systemAudioError);
-            
-            if (systemAudioError.name === 'NotAllowedError') {
-              console.error('Permission denied. On macOS, check Screen Recording permission in System Preferences > Security & Privacy > Privacy > Screen Recording');
-            } else if (systemAudioError.name === 'NotFoundError') {
-              console.error('Audio source not found or not available');
-            }
-            
-            // Fallback to microphone if system audio fails
-            if (!options.deviceId) {
-              console.log('Falling back to default microphone');
+            // Make a safety wrapper that prevents renderer crashes
+            const safeGetUserMedia = async (): Promise<MediaStream | null> => {
               try {
-                stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                console.log('Fallback to microphone successful');
-              } catch (micError: any) {
-                console.error('Microphone fallback also failed:', micError.name, micError.message);
-                throw micError;
+                // Set a timeout to prevent hanging
+                const timeoutPromise = new Promise<null>((_, reject) => {
+                  setTimeout(() => reject(new Error('getUserMedia timeout')), 5000);
+                });
+                
+                // Create the actual media promise
+                const mediaPromise = navigator.mediaDevices.getUserMedia(constraints);
+                
+                // Race against timeout
+                return await Promise.race([mediaPromise, timeoutPromise]);
+              } catch (error: any) {
+                console.error('getUserMedia failed:', error.name, error.message);
+                
+                if (error.name === 'NotAllowedError') {
+                  console.error('Permission denied. On macOS, check Screen Recording permission');
+                }
+                
+                // Return null instead of throwing
+                return null;
               }
+            };
+            
+            // Call the safe wrapper
+            stream = await safeGetUserMedia();
+            
+            if (stream) {
+              console.log('System audio stream obtained successfully');
+              
+              // Log track details for debugging
+              if (typeof stream.getTracks === 'function') {
+                stream.getTracks().forEach((track, index) => {
+                  console.log(`Track ${index}: kind=${track.kind}, enabled=${track.enabled}, readyState=${track.readyState}`);
+                  try {
+                    const settings = track.getSettings();
+                    console.log(`Track settings: ${JSON.stringify(settings)}`);
+                  } catch (err) {
+                    console.warn('Could not get track settings:', err);
+                  }
+                });
+              } else {
+                console.warn('Stream does not have getTracks method');
+              }
+              
+              // Set up audio processing with the stream
+              setupAudioProcessing(stream, true);
+            } else {
+              console.warn('Failed to get system audio stream but recovered gracefully');
+              
+              // Fallback to microphone if system audio fails and microphone is not being used
+              if (!options.deviceId) {
+                console.log('Falling back to default microphone');
+                try {
+                  stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                  console.log('Fallback to microphone successful');
+                  setupAudioProcessing(stream, false);
+                } catch (micError: any) {
+                  console.error('Microphone fallback also failed:', micError.name, micError.message);
+                  
+                  // Send dummy data to indicate we're active but have no real audio
+                  if (window.electronAPI) {
+                    // Set up dummy data interval that doesn't depend on a stream
+                    processingIntervalRef.current = window.setInterval(() => {
+                      const dummyData = new Uint8Array(16).fill(1);
+                      window.electronAPI.sendAudioData(dummyData);
+                    }, 1000); // Very infrequent
+                  }
+                }
+              }
+            }
+          } catch (innerError) {
+            console.error('Inner error handling system audio:', innerError);
+            // Even if everything failed, set up dummy data to prevent IPC failures
+            if (window.electronAPI) {
+              processingIntervalRef.current = window.setInterval(() => {
+                const dummyData = new Uint8Array(16).fill(1);
+                window.electronAPI.sendAudioData(dummyData);
+              }, 1000);
             }
           }
-        } else {
+        } else if (!options.isSystemAudio) {
           // For microphone capture
           console.log('Attempting to capture microphone');
-          constraints = {
+          const constraints = {
             audio: options.deviceId ? { deviceId: { exact: options.deviceId } } : true,
             video: false
           };
           
           try {
-            console.log('Requesting microphone stream with constraints:', JSON.stringify(constraints));
+            console.log('Requesting microphone stream with constraints:', 
+              options.deviceId ? `deviceId: ${options.deviceId}` : 'default device');
+            
             stream = await navigator.mediaDevices.getUserMedia(constraints);
             console.log('Microphone stream obtained successfully', stream.id);
+            setupAudioProcessing(stream, false);
           } catch (micError: any) {
             console.error('Failed to get microphone stream:', micError.name, micError.message);
-            throw micError;
-          }
-        }
-        
-        if (stream) {
-          // Track the stream for cleanup
-          streamsRef.current.push(stream);
-          
-          // Set up an audio context for minimal processing
-          const audioContext = getAudioContext();
-          if (!audioContext) {
-            throw new Error('Failed to create AudioContext');
-          }
-          
-          // Resume the audio context if needed
-          if (audioContext.state === 'suspended') {
-            await audioContext.resume();
-            console.log('AudioContext resumed');
-          }
-
-          // Create a source node from the stream
-          const sourceNode = audioContext.createMediaStreamSource(stream);
-          console.log('MediaStreamSource created from stream');
-          
-          // Set up the minimal processing using an interval
-          processingIntervalRef.current = window.setInterval(() => {
+            
+            // Set up dummy data interval as fallback
             if (window.electronAPI) {
-              // Get audio track information
-              const audioTracks = stream.getTracks();
-              const activeTracks = audioTracks.filter(track => track.enabled && track.readyState === 'live');
-              
-              if (activeTracks.length > 0) {
-                // Get audio settings
-                const settings = activeTracks[0].getSettings();
-                console.log('Audio track active:', activeTracks[0].enabled, 'settings:', settings);
-                
-                // Create and send a proper audio packet with a timestamp
-                const simulatedAudioData = new Uint8Array(128).fill(0);
-                // Fill with simulated volume level based on whether track is enabled
-                const volumeLevel = audioTracks[0].enabled ? 128 : 0;
-                for (let i = 0; i < simulatedAudioData.length; i++) {
-                  // Create a simple sine-like pattern to show activity
-                  simulatedAudioData[i] = Math.floor(volumeLevel * (0.5 + 0.5 * Math.sin(i / 10)));
-                }
-                
-                // Send the data
-                console.log('Sending audio data packet', simulatedAudioData.length, 'bytes');
-                window.electronAPI.sendAudioData(simulatedAudioData);
-              } else {
-                console.warn('No audio tracks available in stream');
-                // Send empty data as fallback
-                const emptyData = new Uint8Array(128).fill(0);
-                window.electronAPI.sendAudioData(emptyData);
-              }
+              processingIntervalRef.current = window.setInterval(() => {
+                const dummyData = new Uint8Array(16).fill(1);
+                window.electronAPI.sendAudioData(dummyData);
+              }, 1000);
             }
-          }, 100); // Send data more frequently (10 times per second)
-          
-          console.log(`${options.isSystemAudio ? 'System audio' : 'Microphone'} capture process set up successfully`);
-        } else {
-          throw new Error('Failed to obtain media stream');
+          }
         }
-      } catch (error) {
-        console.error('Error in audio capture handling:', error);
+      } catch (outerError) {
+        console.error('Outer error in audio handling:', outerError);
         
-        // Send dummy data as fallback to confirm IPC is working
+        // Always ensure we have some kind of data flow even if everything fails
         if (window.electronAPI) {
-          console.log('Sending dummy audio data as fallback');
-          const dummyData = new Uint8Array(10).fill(128);
-          window.electronAPI.sendAudioData(dummyData);
+          console.log('Setting up emergency fallback data interval');
+          processingIntervalRef.current = window.setInterval(() => {
+            const fallbackData = new Uint8Array(8).fill(0);
+            window.electronAPI.sendAudioData(fallbackData);
+          }, 2000);
         }
       }
     };

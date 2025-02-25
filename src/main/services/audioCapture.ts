@@ -45,15 +45,23 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
       audioBuffer = [];
       lastActivity = Date.now();
       audioLevels = [];
+      
+      let captureStarted = false;
 
-      // Check permissions before starting capture
-      let permissionsGranted = true;
-
+      // Try system audio first if enabled
       if (audioSettings.captureSystemAudio) {
         const systemAudioPermission = await checkSystemAudioPermission();
-        if (!systemAudioPermission) {
-          permissionsGranted = false;
-          
+        if (systemAudioPermission) {
+          const success = await startSystemAudioCapture(audioSettings.deviceId);
+          if (success) {
+            captureStarted = true;
+            isCapturing = true;
+            // Start the processing interval here
+            if (audioDataInterval === null) {
+              startAudioProcessingInterval();
+            }
+          }
+        } else {
           const result = await dialog.showMessageBox(mainWindow, {
             type: 'info',
             title: 'System Audio Permission',
@@ -72,20 +80,24 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
             // User canceled
             return { success: false, error: "Canceled by user" };
           }
-          // If "Continue without system audio", we'll just skip system audio capture
-        } else {
-          const success = await startSystemAudioCapture(audioSettings.deviceId);
-          if (!success) {
-            return { success: false, error: "Failed to start system audio capture" };
-          }
+          // If "Continue without system audio", we'll proceed to try microphone
         }
       }
 
-      if (audioSettings.captureMicrophone) {
+      // Only try microphone if system audio didn't start
+      if (!captureStarted && audioSettings.captureMicrophone) {
         const micPermission = await checkMicrophonePermission();
-        if (!micPermission) {
-          permissionsGranted = false;
-          
+        if (micPermission) {
+          const success = await startMicrophoneCapture(audioSettings.deviceId);
+          if (success) {
+            captureStarted = true;
+            isCapturing = true;
+            // Start the processing interval here
+            if (audioDataInterval === null) {
+              startAudioProcessingInterval();
+            }
+          }
+        } else {
           const result = await dialog.showMessageBox(mainWindow, {
             type: 'info',
             title: 'Microphone Permission',
@@ -103,54 +115,21 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
             // User canceled
             return { success: false, error: "Canceled by user" };
           }
-          // If "Continue without microphone", we'll just skip microphone capture
-        } else {
-          const success = await startMicrophoneCapture(audioSettings.deviceId);
-          if (!success) {
-            return { success: false, error: "Failed to start microphone capture" };
-          }
         }
       }
 
-      if (!permissionsGranted && !isCapturing) {
-        // If no permissions were granted and we're not capturing anything, return error
-        return { success: false, error: "No audio sources available" };
-      }
-
-      isCapturing = true;
-
-      // Set up an interval to check audio activity and update UI
-      if (audioDataInterval === null) {
-        audioDataInterval = setInterval(() => {
-          // Check if we've received audio data recently
-          const now = Date.now();
-          const timeSinceLastData = now - lastActivity;
-          
-          if (captureWindow && !captureWindow.isDestroyed()) {
-            // Calculate average audio level for display
-            const avgLevel = audioLevels.length > 0 
-              ? audioLevels.reduce((sum, level) => sum + level, 0) / audioLevels.length 
-              : 0;
-            
-            captureWindow.webContents.send(
-              "audio-level-update",
-              { level: avgLevel, active: timeSinceLastData < 1000 }
-            );
-            
-            // Reset levels for next update
-            audioLevels = [];
-          }
-        }, 200); // Update UI 5 times per second
-      }
-
-      if (captureWindow && !captureWindow.isDestroyed()) {
+      // Update UI
+      if (captureStarted && captureWindow && !captureWindow.isDestroyed()) {
         captureWindow.webContents.send(
           "audio-capture-status",
           TranscriptionStatus.CAPTURING
         );
       }
 
-      return { success: true };
+      return { 
+        success: captureStarted, 
+        error: captureStarted ? undefined : "No audio sources available" 
+      };
     } catch (error) {
       console.error("Error starting audio capture:", error);
       return {
@@ -226,32 +205,61 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
   ipcMain.on("audio-data", (event, data) => {
     if (!isCapturing) return;
     
-    lastActivity = Date.now();
-    
-    if (Buffer.isBuffer(data)) {
-      console.log(`Received audio data: ${data.length} bytes`);
+    try {
+      // Convert to buffer if we received an array
+      let buffer: Buffer;
       
-      // Calculate audio level (simple average of absolute values)
-      let sum = 0;
-      for (let i = 0; i < data.length; i++) {
-        // Normalize to -128 to 127 range and take absolute value
-        sum += Math.abs(data[i] - 128);
+      if (Array.isArray(data)) {
+        buffer = Buffer.from(data);
+      } else if (Buffer.isBuffer(data)) {
+        buffer = data;
+      } else {
+        console.warn('Received invalid audio data type:', typeof data);
+        return;
       }
+      
+      // Size validation
+      if (buffer.length === 0) {
+        console.warn('Received empty audio data');
+        return;
+      }
+      
+      if (buffer.length > 8192) { // 8KB limit
+        console.warn(`Audio data too large (${buffer.length} bytes), truncating`);
+        buffer = buffer.slice(0, 8192);
+      }
+      
+      lastActivity = Date.now();
+      
+      // Calculate audio level more safely with bounds checking
+      let sum = 0;
+      const sampleSize = Math.min(buffer.length, 100); // Limit processing to first 100 bytes
+      
+      for (let i = 0; i < sampleSize; i++) {
+        // Normalize to -128 to 127 range and take absolute value
+        sum += Math.abs((buffer[i] || 0) - 128);
+      }
+      
       // Normalize to 0-1 range
-      const avgLevel = sum / (data.length * 128);
+      const avgLevel = sum / (sampleSize * 128);
       audioLevels.push(avgLevel);
       
       // Store the audio data for processing
-      audioBuffer.push(data);
+      audioBuffer.push(buffer);
       
       // In a real implementation, we'd send this data to a transcription service
       // For now, just log it
-      if (audioBuffer.length > 50) {
+      if (audioBuffer.length > 20) { // Reduced from 50 to 20
         // Keep buffer size manageable by removing oldest data
         audioBuffer.shift();
       }
-    } else {
-      console.warn('Received non-buffer audio data', typeof data);
+      
+      // Safe logging - don't log entire buffer
+      console.log(`Received audio data: ${buffer.length} bytes, level: ${avgLevel.toFixed(3)}`);
+    } catch (error) {
+      console.error('Error processing audio data:', error);
+      // Don't let errors in processing crash the application
+      lastActivity = Date.now(); // Still update activity time
     }
   });
 
@@ -260,6 +268,30 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
       await stopAudioCapture();
     }
   });
+};
+
+// Extract the audio processing interval into a separate function
+const startAudioProcessingInterval = () => {
+  audioDataInterval = setInterval(() => {
+    // Check if we've received audio data recently
+    const now = Date.now();
+    const timeSinceLastData = now - lastActivity;
+    
+    if (captureWindow && !captureWindow.isDestroyed()) {
+      // Calculate average audio level for display
+      const avgLevel = audioLevels.length > 0 
+        ? audioLevels.reduce((sum, level) => sum + level, 0) / audioLevels.length 
+        : 0;
+      
+      captureWindow.webContents.send(
+        "audio-level-update",
+        { level: avgLevel, active: timeSinceLastData < 1000 }
+      );
+      
+      // Reset levels for next update
+      audioLevels = [];
+    }
+  }, 200); // Update UI 5 times per second
 };
 
 const startSystemAudioCapture = async (deviceId?: string): Promise<boolean> => {
@@ -273,9 +305,8 @@ const startSystemAudioCapture = async (deviceId?: string): Promise<boolean> => {
       thumbnailSize: { width: 0, height: 0 } // Skip thumbnails to improve performance
     });
     
-    // Log all available sources for debugging
-    console.log(`Found ${sources.length} potential sources:`, 
-      sources.map(s => `${s.name} (${s.id})`).join(', '));
+    // Don't log all sources - just count and basic info
+    console.log(`Found ${sources.length} potential sources`);
     
     // For macOS, try different strategies to find the appropriate screen source
     let systemAudioSource = null;
@@ -301,8 +332,7 @@ const startSystemAudioCapture = async (deviceId?: string): Promise<boolean> => {
     }
     
     if (!systemAudioSource) {
-      console.error("No system audio source found. Available sources:", 
-        sources.map(s => `${s.name} (${s.id})`).join(', '));
+      console.error("No system audio source found.");
       
       // Add more diagnostic info
       if (process.platform === 'darwin') {
@@ -316,11 +346,16 @@ const startSystemAudioCapture = async (deviceId?: string): Promise<boolean> => {
     
     // Pass the source ID to the renderer to create the audio stream
     if (captureWindow && !captureWindow.isDestroyed()) {
-      captureWindow.webContents.send('start-audio-stream', {
-        sourceId: systemAudioSource.id,
-        isSystemAudio: true
-      });
-      console.log("Sent start-audio-stream message to renderer with sourceId:", systemAudioSource.id);
+      // Set a timeout to allow any previous cleanup to complete
+      setTimeout(() => {
+        if (captureWindow && !captureWindow.isDestroyed()) {
+          captureWindow.webContents.send('start-audio-stream', {
+            sourceId: systemAudioSource?.id,
+            isSystemAudio: true
+          });
+          console.log("Sent start-audio-stream message to renderer with sourceId:", systemAudioSource?.id);
+        }
+      }, 500);
     }
     
     return true;

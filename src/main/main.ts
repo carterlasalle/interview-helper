@@ -12,23 +12,23 @@ process.env.ELECTRON_DEBUG_LEVEL = 'info';
 
 // Enable ScreenCaptureKit for audio capture on macOS
 if (process.platform === 'darwin') {
-  // Add flags needed for audio capture on macOS
+  // Add more targeted ScreenCaptureKit flags
   app.commandLine.appendSwitch('enable-features', 'ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma,ScreenCaptureKitAudio,MacAudioCapture');
-  
-  // Enable proper audio capture for newer macOS versions
   app.commandLine.appendSwitch('use-screen-capture-kit');
-  app.commandLine.appendSwitch('use-screen-capture-kit-for-window');
-  app.commandLine.appendSwitch('use-screen-capture-kit-for-software-composition');
   
-  // Use system defaults for permissions, which respect user choices
+  // Additional specific flags for newer macOS versions
+  const macOSVersion = process.getSystemVersion?.() || '';
+  if (macOSVersion.startsWith('13.') || macOSVersion.startsWith('14.')) {
+    console.log(`Detected macOS ${macOSVersion}, adding Ventura/Sonoma specific flags`);
+    app.commandLine.appendSwitch('enable-features', 'ScreenCaptureKitCaptureAudio');
+  }
+  
+  // Permission handling
   app.commandLine.appendSwitch('use-system-default-media-permissions');
-  
-  // Allow audio capture without user gesture
   app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
   
-  // Disable browser security restrictions that might affect audio capture
-  app.commandLine.appendSwitch('disable-web-security');
-  app.commandLine.appendSwitch('allow-running-insecure-content');
+  // Replace broad security bypasses with targeted ones
+  app.commandLine.appendSwitch('allow-file-access-from-files');
   
   console.log('Enabled ScreenCaptureKit features on macOS');
   
@@ -72,11 +72,10 @@ const createWindow = async () => {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
-      // Enable debugging
       devTools: true,
-      // Disable web security and sandbox to fix audio permissions
-      webSecurity: false,
-      allowRunningInsecureContent: true,
+      // More cautious security settings
+      webSecurity: true,
+      allowRunningInsecureContent: false,
       // Needed for mediaDevices in newer Electron
       sandbox: false
     },
@@ -88,6 +87,35 @@ const createWindow = async () => {
   // Log renderer process crashes
   mainWindow.webContents.on('render-process-gone', (event, details) => {
     console.error('Renderer process gone:', details.reason, details);
+    
+    // Important: Clean up any active audio capture
+    try {
+      const { stopAudioCapture } = require('./services/audioCapture');
+      if (typeof stopAudioCapture === 'function') {
+        console.log('Cleaning up audio capture after renderer crash');
+        stopAudioCapture();
+      }
+    } catch (error) {
+      console.error('Error stopping audio capture after crash:', error);
+    }
+    
+    // Try to recover by recreating the window after a brief delay
+    if (details.reason !== 'clean-exit') {
+      console.log('Attempting to recover from renderer crash...');
+      setTimeout(() => {
+        try {
+          createWindow().catch(err => {
+            console.error('Failed to recreate window after crash:', err);
+          });
+        } catch (error) {
+          console.error('Error recreating window after crash:', error);
+          // Last resort recovery - just quit and let the user restart
+          if (process.platform !== 'darwin') {
+            app.quit();
+          }
+        }
+      }, 2000); // Longer delay (2s) to ensure cleanup is complete
+    }
   });
 
   // Log renderer error messages

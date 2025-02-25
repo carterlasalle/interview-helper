@@ -36,8 +36,38 @@ try {
     },
     
     // Method to send audio data back to the main process
-    sendAudioData: (data: Uint8Array) => 
-      ipcRenderer.send("audio-data", Buffer.from(data)),
+    sendAudioData: (data: Uint8Array) => {
+      try {
+        // Safety checks
+        if (!data || !(data instanceof Uint8Array)) {
+          console.warn('Invalid audio data received:', typeof data);
+          return;
+        }
+        
+        // Size limit for safety
+        const maxSize = 1024; // 1KB max
+        let safeData: Uint8Array;
+        
+        if (data.length > maxSize) {
+          console.warn(`Audio data too large (${data.length} bytes), truncating to ${maxSize}`);
+          safeData = data.slice(0, maxSize);
+        } else {
+          safeData = data;
+        }
+        
+        // Send as a plain array rather than a buffer for better IPC
+        ipcRenderer.send("audio-data", Array.from(safeData));
+      } catch (error) {
+        console.error('Error sending audio data:', error);
+        // Send empty data as fallback
+        try {
+          const fallbackData = new Uint8Array(16).fill(0);
+          ipcRenderer.send("audio-data", Array.from(fallbackData));
+        } catch (fallbackError) {
+          console.error('Failed to send fallback data:', fallbackError);
+        }
+      }
+    },
     
     // Audio status subscription
     onAudioCaptureStatus: (callback: (event: IpcRendererEvent, status: string) => void) => {

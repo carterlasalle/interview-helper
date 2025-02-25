@@ -55,26 +55,22 @@ export const checkSystemAudioPermission = async (): Promise<boolean> => {
   
   try {
     // On macOS, system audio capture requires screen recording permission
-    // Check screen capture permission status
     const screenStatus = systemPreferences.getMediaAccessStatus("screen");
     console.log(`Current screen capture permission status: ${screenStatus}`);
-    
-    // Note: There's no official way to check window capture permission separately
-    // from screen capture in the Electron API
     
     if (screenStatus === "granted") {
       console.log("Screen Recording permission is granted");
       return true;
     }
     
-    // If not granted, we need to direct the user to System Preferences
-    // macOS doesn't have an API to request screen capture permission programmatically
-    console.log("Screen Recording permission not granted, prompting to open System Preferences");
-    shell.openExternal(
-      "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
-    );
+    // Add more diagnostic info
+    console.log("Screen Recording permission not granted");
     
-    // Return false as we've just directed the user to preferences
+    // Don't immediately open System Preferences - let calling code handle this
+    // shell.openExternal(
+    //   "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
+    // );
+    
     return false;
   } catch (error) {
     console.error("Error checking system audio permission:", error);
