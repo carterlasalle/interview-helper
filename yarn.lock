@@ -1185,6 +1185,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/electron-squirrel-startup@npm:^1":
+  version: 1.0.2
+  resolution: "@types/electron-squirrel-startup@npm:1.0.2"
+  checksum: 10c0/d6d6b7b26ef1a0814f7fec15649032d3d518c961155ac3b8e08408d1fff6b08d0e1597ef2926ede34e37dee091129b72e064ba711820a91b3d9f12574a3666a8
+  languageName: node
+  linkType: hard
+
 "@types/fs-extra@npm:9.0.13, @types/fs-extra@npm:^9.0.11":
   version: 9.0.13
   resolution: "@types/fs-extra@npm:9.0.13"
@@ -1688,6 +1695,7 @@ __metadata:
   resolution: "ai-call-assistant@workspace:."
   dependencies:
     "@eslint/js": "npm:^9.21.0"
+    "@types/electron-squirrel-startup": "npm:^1"
     "@types/node": "npm:^20.8.10"
     "@types/react": "npm:^18.2.15"
     "@types/react-dom": "npm:^18.2.7"
@@ -1698,6 +1706,7 @@ __metadata:
     cross-env: "npm:^7.0.3"
     electron: "npm:^27.0.0"
     electron-builder: "npm:^24.6.4"
+    electron-squirrel-startup: "npm:^1.0.1"
     electron-store: "npm:^8.1.0"
     eslint: "npm:8"
     eslint-config-prettier: "npm:^10.0.1"
@@ -2668,6 +2677,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"debug@npm:^2.2.0":
+  version: 2.6.9
+  resolution: "debug@npm:2.6.9"
+  dependencies:
+    ms: "npm:2.0.0"
+  checksum: 10c0/121908fb839f7801180b69a7e218a40b5a0b718813b886b7d6bdb82001b931c938e2941d1e4450f33a1b1df1da653f5f7a0440c197f29fbf8a6e9d45ff6ef589
+  languageName: node
+  linkType: hard
+
 "decamelize@npm:1.2.0":
   version: 1.2.0
   resolution: "decamelize@npm:1.2.0"
@@ -2924,6 +2942,15 @@ __metadata:
     lazy-val: "npm:^1.0.5"
     mime: "npm:^2.5.2"
   checksum: 10c0/d31e14f836c7cb4e56f897fcebedbe4c13c32974688d5c3a77681df882a24229188de4c0d46e9ae4981df6f308889118671a6ef5279105f8e6b920c34e1fcc2c
+  languageName: node
+  linkType: hard
+
+"electron-squirrel-startup@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "electron-squirrel-startup@npm:1.0.1"
+  dependencies:
+    debug: "npm:^2.2.0"
+  checksum: 10c0/eaff42844702321237b23f68ae2bff2eae17cb1251189e9a5397d94d1598a607e3cbedc60e130a0641798739019db44c37b2a8801e7a60f9261810bb8d07e9bf
   languageName: node
   linkType: hard
 
@@ -5466,6 +5493,13 @@ __metadata:
     binary-search: "npm:^1.3.5"
     num-sort: "npm:^2.0.0"
   checksum: 10c0/e3ecd07bead5d18bc7b6fed1dfefbe65aea4008d5556181b94b7d70550fba543d2501b224f12a9f5197c1d23d95faef2accc7fd265c5afd15ef55a38190ffc6e
+  languageName: node
+  linkType: hard
+
+"ms@npm:2.0.0":
+  version: 2.0.0
+  resolution: "ms@npm:2.0.0"
+  checksum: 10c0/f8fda810b39fd7255bbdc451c46286e549794fcc700dc9cd1d25658bbc4dc2563a5de6fe7c60f798a16a60c6ceb53f033cb353f493f0cf63e5199b702943159d
   languageName: node
   linkType: hard
 

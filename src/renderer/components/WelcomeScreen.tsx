@@ -56,7 +56,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       content: (
         <>
           <p>
-            To use AI Call Assistant, you'll need an API key from OpenAI or
+            To use AI Call Assistant, you&apos;ll need an API key from OpenAI or
             OpenRouter. This key will be stored securely on your device.
           </p>
 
@@ -76,7 +76,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </div>
 
             <div className="api-options">
-              <p>Don't have an API key yet?</p>
+              <p>Don&apos;t have an API key yet?</p>
               <div className="option-buttons">
                 <a
                   href="https://platform.openai.com/account/api-keys"
@@ -113,7 +113,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <div className="permission-item">
               <h4>System Audio</h4>
               <p>
-                To capture audio from your calls, you'll need to install a
+                To capture audio from your calls, you&apos;ll need to install a
                 virtual audio device like BlackHole or Soundflower.
               </p>
               <a
@@ -138,11 +138,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       ),
     },
     {
-      title: "You're All Set!",
+      title: "You&apos;re All Set!",
       content: (
         <>
           <p>
-            You're ready to start using AI Call Assistant. Here's how to get
+            You&apos;re ready to start using AI Call Assistant. Here&apos;s how to get
             started:
           </p>
 
@@ -151,7 +151,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               <div className="step-number">1</div>
               <div className="step-text">
                 <h4>Start Capturing</h4>
-                <p>Click the "Start Capture" button before your call begins</p>
+                <p>Click the &quot;Start Capture&quot; button before your call begins</p>
               </div>
             </div>
 
@@ -185,7 +185,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   const handleNext = () => {
     if (currentStep === steps.length - 1) {
-      // Save API key if provided
       if (apiKey && window.electronAPI) {
         window.electronAPI
           .getSetting("app_settings")
@@ -200,8 +199,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           })
           .catch(console.error);
       }
-
-      // Complete onboarding
       onComplete();
     } else {
       setCurrentStep(currentStep + 1);

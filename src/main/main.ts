@@ -1,24 +1,19 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "path";
+import squirrel from "electron-squirrel-startup";
 import { setupAudioCapture } from "./services/audioCapture";
 import { setupTranscriptionService } from "./services/transcription";
 import { setupLLMService } from "./services/llm";
 import { setupDatabase } from "./services/database";
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-try {
-  if (require("electron-squirrel-startup")) {
-    app.quit();
-  }
-} catch (error) {
-  console.log("electron-squirrel-startup not available, skipping...");
+if (squirrel) {
+  app.quit();
 }
 
 let mainWindow: BrowserWindow | null = null;
 let servicesInitialized = false;
 
 const createWindow = async () => {
-  // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
@@ -29,16 +24,24 @@ const createWindow = async () => {
     },
   });
 
-  // In development mode, load from the Vite dev server
   if (process.env.NODE_ENV === "development") {
-    await mainWindow.loadURL("http://localhost:3001/");
-    mainWindow.webContents.openDevTools();
+    console.log("Loading app from development server on port 3001");
+    try {
+      await mainWindow.loadURL("http://localhost:3001/");
+      // Always open dev tools in development mode
+      mainWindow.webContents.openDevTools();
+      console.log("Development URL loaded successfully");
+    } catch (error) {
+      console.error("Failed to load development URL:", error);
+      // Fallback to production build if development server is not available
+      await mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+    }
   } else {
     // In production, load the built index.html
+    console.log("Loading app from production build");
     await mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
 
-  // Initialize services only once
   if (!servicesInitialized && mainWindow) {
     setupAudioCapture(mainWindow);
     setupTranscriptionService(mainWindow);
@@ -47,42 +50,55 @@ const createWindow = async () => {
     servicesInitialized = true;
   }
 
-  // Open external links in default browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("http")) {
-      require("electron").shell.openExternal(url);
+      shell.openExternal(url);
     }
     return { action: "deny" };
   });
 };
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
 app.whenReady().then(() => {
   createWindow();
-
   app.on("activate", () => {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
   });
 });
 
-// Quit when all windows are closed, except on macOS.
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-// Handle IPC messages from the renderer process
 ipcMain.handle("get-app-version", () => {
   return app.getVersion();
 });
 
-// Exit cleanly on request from parent process in development mode.
+// Add the missing IPC handlers for settings
+ipcMain.handle("get-setting", async (event, key) => {
+  const { getSetting } = require("./services/database");
+  try {
+    return await getSetting(key, null);
+  } catch (error) {
+    console.error(`Error getting setting ${key}:`, error);
+    return null;
+  }
+});
+
+ipcMain.handle("set-setting", async (event, key, value) => {
+  const { setSetting } = require("./services/database");
+  try {
+    await setSetting(key, value);
+    return true;
+  } catch (error) {
+    console.error(`Error setting ${key}:`, error);
+    return false;
+  }
+});
+
 if (process.env.NODE_ENV === "development") {
   if (process.platform === "win32") {
     process.on("message", (data) => {
