@@ -1,27 +1,45 @@
+import { IpcRendererEvent } from "electron";
+
 interface ElectronAPI {
   // App info
   getAppVersion: () => Promise<string>;
 
   // Audio capture related
-  startAudioCapture: () => Promise<void>;
-  stopAudioCapture: () => Promise<void>;
+  startAudioCapture: () => Promise<{ success: boolean; error?: string; message?: string }>;
+  stopAudioCapture: () => Promise<{ success: boolean; error?: string; message?: string }>;
+  checkAudioPermissions: () => Promise<{ 
+    success: boolean; 
+    error?: string; 
+    permissions?: {
+      microphone: boolean;
+      systemAudio: boolean;
+    }
+  }>;
+  getAudioDevices: () => Promise<{
+    success: boolean;
+    error?: string;
+    devices?: Array<{ id: string; name: string; type: string }>;
+  }>;
+  onAudioCaptureStatus: (
+    callback: (event: IpcRendererEvent, status: string) => void
+  ) => () => void;
 
   // Transcription related
   getTranscription: (
-    callback: (event: any, transcript: string) => void,
+    callback: (event: IpcRendererEvent, transcript: unknown) => void
   ) => () => void;
 
   // LLM related
-  getAIResponse: (query: string) => Promise<string>;
+  getAIResponse: (query: string) => Promise<unknown>;
 
   // Settings related
-  getSetting: (key: string) => Promise<any>;
-  setSetting: (key: string, value: any) => Promise<void>;
+  getSetting: (key: string) => Promise<unknown>;
+  setSetting: (key: string, value: unknown) => Promise<boolean>;
 
   // Conversation history related
-  getConversationHistory: () => Promise<any[]>;
-  saveConversation: (data: any) => Promise<string>;
-  exportConversation: (id: string, format: string) => Promise<string>;
+  getConversationHistory: () => Promise<unknown>;
+  saveConversation: (data: unknown) => Promise<unknown>;
+  exportConversation: (id: string, format: string) => Promise<unknown>;
 }
 
 interface Window {
@@ -36,3 +54,5 @@ declare global {
     electronReady: boolean;
   }
 }
+
+export {};

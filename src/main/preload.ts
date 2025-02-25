@@ -13,6 +13,18 @@ try {
     // Audio capture related
     startAudioCapture: () => ipcRenderer.invoke("start-audio-capture"),
     stopAudioCapture: () => ipcRenderer.invoke("stop-audio-capture"),
+    checkAudioPermissions: () => ipcRenderer.invoke("check-audio-permissions"),
+    getAudioDevices: () => ipcRenderer.invoke("get-audio-devices"),
+    
+    // Audio status subscription
+    onAudioCaptureStatus: (callback: (event: IpcRendererEvent, status: string) => void) => {
+      const subscription = (_event: IpcRendererEvent, status: string) =>
+        callback(_event, status);
+      ipcRenderer.on("audio-capture-status", subscription);
+      return () => {
+        ipcRenderer.removeListener("audio-capture-status", subscription);
+      };
+    },
 
     // Transcription related
     getTranscription: (callback: (event: IpcRendererEvent, transcript: string) => void) => {

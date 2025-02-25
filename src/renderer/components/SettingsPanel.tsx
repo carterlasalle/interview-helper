@@ -31,10 +31,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         // If no settings provided, try to load from electron store
         setIsLoading(true);
         window.electronAPI
-          .getSetting("app_settings", null)
-          .then((savedSettings: AppSettings | null) => {
-            if (savedSettings) {
-              setSettings(savedSettings);
+          .getSetting("app_settings")
+          .then((savedSettings) => {
+            const typedSettings = savedSettings as AppSettings | null;
+            if (typedSettings) {
+              setSettings(typedSettings);
             } else {
               // Set defaults if no settings found
               setSettings({

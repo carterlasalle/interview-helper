@@ -1,10 +1,18 @@
-import { BrowserWindow, ipcMain, app } from "electron";
+import { BrowserWindow, ipcMain, app, dialog } from "electron";
 import { getSetting } from "./database";
 import { TranscriptionStatus } from "../../common/types";
+import { 
+  checkMicrophonePermission, 
+  checkSystemAudioPermission,
+  openAudioPreferences
+} from "../utils/permissions";
 
 let audioBuffer: Buffer[] = [];
 let isCapturing = false;
 let captureWindow: BrowserWindow | null = null;
+
+// For actual audio capture, we would use native bindings
+// This simplified implementation will focus on permission handling
 
 export const setupAudioCapture = (mainWindow: BrowserWindow) => {
   captureWindow = mainWindow;
@@ -24,12 +32,69 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
 
       audioBuffer = [];
 
+      // Check permissions before starting capture
+      let permissionsGranted = true;
+
       if (audioSettings.captureSystemAudio) {
-        await startSystemAudioCapture(audioSettings.deviceId);
+        const systemAudioPermission = await checkSystemAudioPermission();
+        if (!systemAudioPermission) {
+          permissionsGranted = false;
+          
+          const result = await dialog.showMessageBox(mainWindow, {
+            type: 'info',
+            title: 'System Audio Permission',
+            message: 'System audio capture permission not granted',
+            detail: 'To capture system audio, please grant the necessary permissions in System Preferences.',
+            buttons: ['Open Settings', 'Continue without system audio', 'Cancel'],
+            defaultId: 0,
+            cancelId: 2
+          });
+          
+          if (result.response === 0) {
+            // Open system preferences
+            openAudioPreferences();
+            return { success: false, error: "Permissions required" };
+          } else if (result.response === 2) {
+            // User canceled
+            return { success: false, error: "Canceled by user" };
+          }
+          // If "Continue without system audio", we'll just skip system audio capture
+        } else {
+          await startSystemAudioCapture(audioSettings.deviceId);
+        }
       }
 
       if (audioSettings.captureMicrophone) {
-        await startMicrophoneCapture(audioSettings.deviceId);
+        const micPermission = await checkMicrophonePermission();
+        if (!micPermission) {
+          permissionsGranted = false;
+          
+          const result = await dialog.showMessageBox(mainWindow, {
+            type: 'info',
+            title: 'Microphone Permission',
+            message: 'Microphone permission not granted',
+            detail: 'To capture microphone audio, please grant the necessary permissions in System Preferences.',
+            buttons: ['Open Settings', 'Continue without microphone', 'Cancel'],
+            defaultId: 0,
+            cancelId: 2
+          });
+          
+          if (result.response === 0) {
+            // The system permission prompt should have already been shown by checkMicrophonePermission
+            return { success: false, error: "Permissions required" };
+          } else if (result.response === 2) {
+            // User canceled
+            return { success: false, error: "Canceled by user" };
+          }
+          // If "Continue without microphone", we'll just skip microphone capture
+        } else {
+          await startMicrophoneCapture(audioSettings.deviceId);
+        }
+      }
+
+      if (!permissionsGranted && !isCapturing) {
+        // If no permissions were granted and we're not capturing anything, return error
+        return { success: false, error: "No audio sources available" };
       }
 
       isCapturing = true;
@@ -37,7 +102,7 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
       if (captureWindow && !captureWindow.isDestroyed()) {
         captureWindow.webContents.send(
           "audio-capture-status",
-          TranscriptionStatus.CAPTURING,
+          TranscriptionStatus.CAPTURING
         );
       }
 
@@ -64,7 +129,7 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
       if (captureWindow && !captureWindow.isDestroyed()) {
         captureWindow.webContents.send(
           "audio-capture-status",
-          TranscriptionStatus.IDLE,
+          TranscriptionStatus.IDLE
         );
       }
 
@@ -91,6 +156,28 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
     }
   });
 
+  // Add a new handler to check permissions without starting capture
+  ipcMain.handle("check-audio-permissions", async () => {
+    try {
+      const micPermission = await checkMicrophonePermission();
+      const systemAudioPermission = await checkSystemAudioPermission();
+      
+      return { 
+        success: true, 
+        permissions: {
+          microphone: micPermission,
+          systemAudio: systemAudioPermission
+        }
+      };
+    } catch (error) {
+      console.error("Error checking audio permissions:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  });
+
   app.on("before-quit", async () => {
     if (isCapturing) {
       await stopAudioCapture();
@@ -98,24 +185,46 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
   });
 };
 
-const startSystemAudioCapture = async (_deviceId?: string) => {
-  console.log("Starting system audio capture...");
+const startSystemAudioCapture = async (deviceId?: string) => {
+  console.log("Starting system audio capture...", deviceId);
+  
+  // In a real implementation, we would:
+  // 1. Initialize the audio capture API (e.g., Core Audio on macOS)
+  // 2. Create an audio stream with the specified device
+  // 3. Set up a callback to process captured audio chunks
+  
+  // For now, we'll use our simulation for development
   startAudioSimulation();
   return true;
 };
 
-const startMicrophoneCapture = async (_deviceId?: string) => {
-  console.log("Starting microphone capture...");
+const startMicrophoneCapture = async (deviceId?: string) => {
+  console.log("Starting microphone capture...", deviceId);
+  
+  // In a real implementation, we would:
+  // 1. Initialize the microphone capture API
+  // 2. Create an audio stream with the specified device
+  // 3. Set up a callback to process captured audio chunks
+  
+  // For now, we don't simulate this separately
   return true;
 };
 
 const stopAudioCapture = async () => {
   console.log("Stopping audio capture...");
+  
+  // In a real implementation, we would:
+  // 1. Stop and clean up all audio streams
+  // 2. Release resources
+  
   stopAudioSimulation();
   return true;
 };
 
 const getAudioDevices = async () => {
+  // In a real implementation, we would query the system for available audio devices
+  // For now, return mock devices
+  
   return [
     {
       id: "system",
@@ -166,8 +275,10 @@ const processAudioChunk = (chunk: Buffer) => {
   }
 };
 
-export const checkAudioPermissions = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    resolve(true);
-  });
+// This now uses our utility function
+export const checkAudioPermissions = async (): Promise<boolean> => {
+  const micPermission = await checkMicrophonePermission();
+  const systemPermission = await checkSystemAudioPermission();
+  
+  return micPermission || systemPermission;
 };

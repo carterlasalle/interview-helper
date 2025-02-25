@@ -16,6 +16,11 @@ import "./styles/App.css";
 import "./styles/SettingsPanel.css";
 import "./styles/WelcomeScreen.css";
 
+interface AudioPermissions {
+  microphone: boolean;
+  systemAudio: boolean;
+}
+
 const App: React.FC = () => {
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
   const [responses, setResponses] = useState<AIResponse[]>([]);
@@ -30,6 +35,11 @@ const App: React.FC = () => {
     undefined,
   );
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean>(false);
+  const [audioPermissions, setAudioPermissions] = useState<AudioPermissions>({
+    microphone: false,
+    systemAudio: false,
+  });
+  const [isPermissionDialogShown, setIsPermissionDialogShown] = useState<boolean>(false);
 
   useEffect(() => {
     // Setup Electron IPC listeners if we're in Electron
@@ -63,6 +73,16 @@ const App: React.FC = () => {
         })
         .catch(console.error);
 
+      // Check audio permissions on startup
+      window.electronAPI
+        .checkAudioPermissions()
+        .then((result) => {
+          if (result.success) {
+            setAudioPermissions(result.permissions);
+          }
+        })
+        .catch(console.error);
+
       // Listen for transcription updates
       const unsubscribeTranscription = window.electronAPI.getTranscription(
         (event, transcript) => {
@@ -70,7 +90,14 @@ const App: React.FC = () => {
         },
       );
 
-      // Listen for transcription status changes
+      // Subscribe to audio capture status updates
+      const unsubscribeAudioStatus = window.electronAPI.onAudioCaptureStatus(
+        (event, status: string) => {
+          setTranscriptionStatus(status as TranscriptionStatus);
+        }
+      );
+
+      // Listen for transcription status changes (legacy event-based approach)
       const handleTranscriptionStatus = (
         event: any,
         status: TranscriptionStatus,
@@ -100,6 +127,7 @@ const App: React.FC = () => {
       return () => {
         // Clean up listeners
         unsubscribeTranscription();
+        unsubscribeAudioStatus();
         window.removeEventListener(
           "transcription-status",
           handleTranscriptionStatus as EventListener,
@@ -119,6 +147,21 @@ const App: React.FC = () => {
   const handleStartCapture = async () => {
     if (window.electronAPI) {
       try {
+        // Check permissions before starting capture
+        const permissionResult = await window.electronAPI.checkAudioPermissions();
+        if (permissionResult.success) {
+          setAudioPermissions(permissionResult.permissions);
+          
+          // If we don't have any permissions and haven't shown the dialog yet
+          if (!permissionResult.permissions.microphone && 
+              !permissionResult.permissions.systemAudio && 
+              !isPermissionDialogShown) {
+            setIsPermissionDialogShown(true);
+            // The dialog will be shown by the main process as part of startAudioCapture
+          }
+        }
+        
+        // Attempt to start capture (this will show permission dialogs if needed)
         await window.electronAPI.startAudioCapture();
       } catch (error) {
         console.error("Failed to start audio capture:", error);

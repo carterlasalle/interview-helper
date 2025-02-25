@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../styles/WelcomeScreen.css";
+import { AppSettings } from "@common/types";
 
 interface WelcomeScreenProps {
   isFirstLaunch: boolean;
@@ -189,12 +190,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         window.electronAPI
           .getSetting("app_settings")
           .then((settings) => {
-            if (settings) {
-              settings.llm = {
-                ...settings.llm,
+            const typedSettings = settings as AppSettings | null;
+            if (typedSettings) {
+              typedSettings.llm = {
+                ...typedSettings.llm,
                 apiKey,
               };
-              return window.electronAPI.setSetting("app_settings", settings);
+              return window.electronAPI.setSetting("app_settings", typedSettings);
             }
           })
           .catch(console.error);

@@ -55,11 +55,18 @@
     "appId": "com.aica.app",
     "productName": "AI Call Assistant",
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "entitlements": "assets/entitlements.mac.plist",
+      "entitlementsInherit": "assets/entitlements.mac.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "AI Call Assistant needs access to your microphone to capture audio for transcription.",
+        "NSCameraUsageDescription": "AI Call Assistant does not use your camera."
+      }
     },
     "files": [
       "dist/**/*",
-      "package.json"
+      "package.json",
+      "assets/**/*"
     ],
     "directories": {
       "output": "release"
