@@ -16,6 +16,29 @@ try {
     checkAudioPermissions: () => ipcRenderer.invoke("check-audio-permissions"),
     getAudioDevices: () => ipcRenderer.invoke("get-audio-devices"),
     
+    // Audio stream event handlers
+    onStartAudioStream: (callback: (event: IpcRendererEvent, options: any) => void) => {
+      const subscription = (_event: IpcRendererEvent, options: any) =>
+        callback(_event, options);
+      ipcRenderer.on("start-audio-stream", subscription);
+      return () => {
+        ipcRenderer.removeListener("start-audio-stream", subscription);
+      };
+    },
+    
+    onStopAudioStream: (callback: (event: IpcRendererEvent) => void) => {
+      const subscription = (_event: IpcRendererEvent) =>
+        callback(_event);
+      ipcRenderer.on("stop-audio-stream", subscription);
+      return () => {
+        ipcRenderer.removeListener("stop-audio-stream", subscription);
+      };
+    },
+    
+    // Method to send audio data back to the main process
+    sendAudioData: (data: Uint8Array) => 
+      ipcRenderer.send("audio-data", Buffer.from(data)),
+    
     // Audio status subscription
     onAudioCaptureStatus: (callback: (event: IpcRendererEvent, status: string) => void) => {
       const subscription = (_event: IpcRendererEvent, status: string) =>

@@ -5,6 +5,7 @@ import ControlPanel from "./components/ControlPanel";
 import Header from "./components/Header";
 import SettingsPanel from "./components/SettingsPanel";
 import WelcomeScreen from "./components/WelcomeScreen";
+import AudioCapture from "./components/AudioCapture";
 import {
   Transcript,
   AIResponse,
@@ -273,6 +274,8 @@ const App: React.FC = () => {
         isFirstLaunch={isFirstLaunch}
         onComplete={handleCompleteOnboarding}
       />
+      
+      <AudioCapture />
     </div>
   );
 };

@@ -1,5 +1,10 @@
 import { IpcRendererEvent } from "electron";
 
+// Add WebAudioContext interface for compatibility
+interface Window {
+  webkitAudioContext: typeof AudioContext;
+}
+
 interface ElectronAPI {
   // App info
   getAppVersion: () => Promise<string>;
@@ -23,6 +28,19 @@ interface ElectronAPI {
   onAudioCaptureStatus: (
     callback: (event: IpcRendererEvent, status: string) => void
   ) => () => void;
+  
+  // Audio stream handlers
+  onStartAudioStream: (
+    callback: (event: IpcRendererEvent, options: { 
+      sourceId?: string;
+      deviceId?: string;
+      isSystemAudio: boolean;
+    }) => void
+  ) => () => void;
+  onStopAudioStream: (
+    callback: (event: IpcRendererEvent) => void
+  ) => () => void;
+  sendAudioData: (data: Uint8Array) => void;
 
   // Transcription related
   getTranscription: (
@@ -42,9 +60,11 @@ interface ElectronAPI {
   exportConversation: (id: string, format: string) => Promise<unknown>;
 }
 
+// Define the window interface
 interface Window {
   electronAPI: ElectronAPI;
   electronReady: boolean;
+  webkitAudioContext: typeof AudioContext;
 }
 
 // Declare global electronAPI and electronReady
@@ -52,6 +72,7 @@ declare global {
   interface Window {
     electronAPI: ElectronAPI;
     electronReady: boolean;
+    webkitAudioContext: typeof AudioContext;
   }
 }
 

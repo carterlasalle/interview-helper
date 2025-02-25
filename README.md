@@ -8,14 +8,15 @@ An Electron-based macOS application that listens to your calls, transcribes conv
 
 ## Current Status
 
-✅ MVP completed with simulated services
-🚧 Working towards real API integrations
+✅ MVP completed with real audio capture implementation
+🚧 Working towards transcription and LLM API integrations
 
 ## Features
 
-- **Real-time Audio Capture** (Simulated)
-  - System audio capture 
-  - Microphone input
+- **Real-time Audio Capture**
+  - System audio capture using Electron's ScreenCaptureKit integration
+  - Microphone input with proper permission handling
+  - Permission dialogs for audio access
 
 - **Live Transcription** (Simulated)
   - Converts speech to text
@@ -37,7 +38,7 @@ An Electron-based macOS application that listens to your calls, transcribes conv
 
 - **Frontend**: React, TypeScript, CSS
 - **Backend**: Electron (Node.js)
-- **Audio Processing**: Core Audio API (planned)
+- **Audio Processing**: macOS ScreenCaptureKit and WebAudio API
 - **Transcription**: OpenAI Whisper API (planned)
 - **AI Responses**: OpenRouter API (planned)
 - **Database**: SQLite
@@ -84,7 +85,8 @@ This will create a distributable application in the `/dist` folder.
 - ✅ Project setup and configuration
 - ✅ Core application structure
 - ✅ UI components implementation
-- ✅ Simulated audio capture service
+- ✅ Real audio capture with ScreenCaptureKit
+- ✅ Permission handling for microphone and system audio
 - ✅ Mock transcription service
 - ✅ Mock LLM response service
 - ✅ Settings panel implementation
@@ -92,7 +94,6 @@ This will create a distributable application in the `/dist` folder.
 - ✅ Light/Dark theme support
 
 ### In Progress
-- 🚧 Implementing actual Core Audio API integration
 - 🚧 Connecting to OpenAI Whisper API
 - 🚧 Integrating with OpenRouter for LLM access
 

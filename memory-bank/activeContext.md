@@ -10,7 +10,7 @@ We have successfully implemented a Minimum Viable Product (MVP) of the AI Call A
    - Service-based architecture
 
 2. **Core Services**
-   - Audio capture service with macOS permission handling (in progress)
+   - Audio capture service with real implementation using ScreenCaptureKit
    - Transcription service (simulated with static conversation examples)
    - LLM response generation (mock responses for common queries)
    - Database service for settings and conversation storage
@@ -22,28 +22,31 @@ We have successfully implemented a Minimum Viable Product (MVP) of the AI Call A
    - ControlPanel for managing audio capture
    - SettingsPanel for configuring application preferences
    - WelcomeScreen for first-time user onboarding
+   - AudioCapture component for handling audio streams
 
 ## Development Progress
 
-The MVP implementation is now complete. We have moved beyond simulated services and have begun implementing real functionality:
+The MVP implementation is now complete with real audio capture functionality:
 
 1. **Audio Capture Implementation**
-   - Added macOS permission handling for microphone access
-   - Created system audio capture with proper permission checks
-   - Implemented permission request dialogs in the UI
-   - Added entitlements for macOS app packaging
-   - Structured the code to be ready for real hardware integration
+   - ✅ Added macOS permission handling for microphone access
+   - ✅ Created system audio capture with proper permission checks
+   - ✅ Implemented permission request dialogs in the UI
+   - ✅ Added entitlements for macOS app packaging
+   - ✅ Implemented real audio capture using Electron's ScreenCaptureKit integration
+   - ✅ Created AudioCapture component for handling audio streams in the renderer
+   - ✅ Added audio processing using WebAudio API
 
 ## Immediate Focus
 
-Our immediate focus continues to be transitioning from the simulated services to real implementations:
+Our immediate focus is now on integrating with external APIs:
 
 1. **Audio Capture Integration**
    - ✅ Implement permission handling for microphone and system audio
-   - 🔄 Complete Core Audio API integration for system audio
-   - 🔄 Add microphone input processing
-   - 🔄 Develop audio buffering and processing
-   - 🔄 Ensure compatibility with various macOS versions
+   - ✅ Complete integration with ScreenCaptureKit
+   - ✅ Add microphone input processing
+   - ✅ Develop audio buffering and processing
+   - ✅ Ensure compatibility with various macOS versions
 
 2. **Transcription API Integration**
    - Connect to OpenAI Whisper API
@@ -60,7 +63,8 @@ Our immediate focus continues to be transitioning from the simulated services to
 ## Current Decisions
 
 1. **API Integration Strategy**
-   - Using macOS system APIs for permission handling
+   - Using Electron's ScreenCaptureKit for system audio capture
+   - Using WebAudio API for audio processing
    - Using OpenAI Whisper API for transcription
    - Using OpenRouter for LLM access to provide flexibility
    - Implementing secure API key storage in system keychain
@@ -82,18 +86,23 @@ Our immediate focus continues to be transitioning from the simulated services to
 5. How will we implement data export functionality?
 6. What is the ideal UI layout for various screen sizes?
 7. How should we handle errors and connection issues in production?
-8. What's the most efficient way to implement actual Core Audio integration for system audio capture?
+8. How can we optimize audio quality for better transcription results?
 
 ## Recent Changes
 
-1. **Audio Capture Improvements**
+1. **Audio Capture Implementation**
+   - Implemented real system audio capture using Electron's ScreenCaptureKit
+   - Added WebAudio API for audio processing
+   - Created AudioCapture component for renderer-side audio handling
+   - Added proper audio data transmission between renderer and main process
+   - Updated electron-builder configuration for required entitlements
+
+2. Previous Changes:
    - Added macOS permission handling for microphone access
    - Implemented permission request UI flow
    - Created entitlements for macOS app permissions
    - Added proper permission checking
    - Updated electron-builder configuration for package building
-
-2. Previous Changes:
    - Implemented WelcomeScreen with multi-step onboarding process
    - Created SettingsPanel with comprehensive configuration options
    - Added settings persistence using SQLite database
@@ -104,14 +113,13 @@ Our immediate focus continues to be transitioning from the simulated services to
 
 ## Next Steps
 
-1. Implement actual Core Audio integration for real system audio capture
-2. Connect to OpenAI Whisper API for real-time transcription
-3. Implement OpenRouter integration for LLM responses
-4. Add conversation export functionality
-5. Develop more robust error handling and recovery mechanisms
-6. Add keyboard shortcuts for common actions
-7. Implement automated testing
-8. Package application for distribution
+1. Connect to OpenAI Whisper API for real-time transcription
+2. Implement OpenRouter integration for LLM responses
+3. Add conversation export functionality
+4. Develop more robust error handling and recovery mechanisms
+5. Add keyboard shortcuts for common actions
+6. Implement automated testing
+7. Package application for distribution
 
 ## Technical Considerations
 
@@ -136,6 +144,7 @@ Our immediate focus continues to be transitioning from the simulated services to
 - [Electron Documentation](https://www.electronjs.org/docs/latest/)
 - [React Documentation](https://reactjs.org/docs/getting-started.html)
 - [OpenAI Whisper API](https://beta.openai.com/docs/api-reference/audio)
-- [macOS Core Audio Documentation](https://developer.apple.com/documentation/coreaudio)
+- [WebAudio API Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
+- [ScreenCaptureKit Documentation](https://developer.apple.com/documentation/screencapturekit)
 - [SQLite Documentation](https://www.sqlite.org/docs.html)
 - [macOS Permission Handling in Electron](https://www.electronjs.org/docs/latest/tutorial/security)

@@ -1,0 +1,260 @@
+Enabled ScreenCaptureKit features on macOS
+App ready, creating window...
+Creating main window...
+[3234:0225/133103.385289:WARNING:address_sorter_posix.cc(459)] FromSockAddr failed on netmask
+[3234:0225/133103.385765:WARNING:address_sorter_posix.cc(459)] FromSockAddr failed on netmask
+Loading app from production build
+2025-02-25 13:31:03.817 Electron[3232:18813472] +[IMKClient subclass]: chose IMKClient_Modern
+2025-02-25 13:31:03.817 Electron[3232:18813472] +[IMKInputSession subclass]: chose IMKInputSession_Modern
+Renderer info: Preload script starting (/Users/rocket/interview helper/dist/main/preload.js:4)
+[3232:0225/133103.853683:INFO:CONSOLE(4)] "Preload script starting", source: /Users/rocket/interview helper/dist/main/preload.js (4)
+Renderer info: Setting up contextBridge (/Users/rocket/interview helper/dist/main/preload.js:8)
+[3232:0225/133103.853779:INFO:CONSOLE(8)] "Setting up contextBridge", source: /Users/rocket/interview helper/dist/main/preload.js (8)
+Renderer info: Exposing electronReady flag (/Users/rocket/interview helper/dist/main/preload.js:61)
+[3232:0225/133103.853867:INFO:CONSOLE(61)] "Exposing electronReady flag", source: /Users/rocket/interview helper/dist/main/preload.js (61)
+Renderer info: Preload script finished (/Users/rocket/interview helper/dist/main/preload.js:63)
+[3232:0225/133103.853938:INFO:CONSOLE(63)] "Preload script finished", source: /Users/rocket/interview helper/dist/main/preload.js (63)
+Renderer info: Renderer process starting (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.874383:INFO:CONSOLE(40)] "Renderer process starting", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: electronReady: true (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.874567:INFO:CONSOLE(40)] "electronReady: true", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: electronAPI: [object Object] (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.874689:INFO:CONSOLE(40)] "electronAPI: [object Object]", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Electron is ready, rendering immediately (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.874890:INFO:CONSOLE(40)] "Electron is ready, rendering immediately", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Rendering app now (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.875192:INFO:CONSOLE(40)] "Rendering app now", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Root element: [object HTMLDivElement] (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.875257:INFO:CONSOLE(40)] "Root element: [object HTMLDivElement]", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: App rendered (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.876248:INFO:CONSOLE(40)] "App rendered", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Initializing services...
+Database initialized at /Users/rocket/Library/Application Support/ai-call-assistant/aica-database.sqlite
+Renderer warning: %cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has "webSecurity" disabled. This
+  exposes users of this app to severe security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[3232:0225/133103.888829:INFO:CONSOLE(2)] "%cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has "webSecurity" disabled. This
+  exposes users of this app to severe security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/renderer_init (2)
+Renderer warning: %cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has "allowRunningInsecureContent"
+  enabled. This exposes users of this app to severe security risks.
+
+  
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[3232:0225/133103.889076:INFO:CONSOLE(2)] "%cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has "allowRunningInsecureContent"
+  enabled. This exposes users of this app to severe security risks.
+
+  
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/renderer_init (2)
+Renderer info: AudioCapture component mounted (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.946994:INFO:CONSOLE(40)] "AudioCapture component mounted", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Setting up audio stream event handlers (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133103.947174:INFO:CONSOLE(40)] "Setting up audio stream event handlers", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Current microphone permission status: granted
+Current microphone permission status: granted
+[3232:0225/133103.999816:WARNING:CONSOLE(2)] "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/sandbox_bundle (2)
+Current microphone permission status: granted
+Current microphone permission status: granted
+Current microphone permission status: granted
+Starting real system audio capture...
+Found system audio source: AudioCapture.tsx — interview helper
+Current microphone permission status: granted
+Starting real microphone capture...
+Renderer info: Starting audio stream with options: [object Object] (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133105.918057:INFO:CONSOLE(40)] "Starting audio stream with options: [object Object]", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Attempting to capture system audio with sourceId: window:315116:0 (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133105.918139:INFO:CONSOLE(40)] "Attempting to capture system audio with sourceId: window:315116:0", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Requesting media stream with constraints (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133105.918196:INFO:CONSOLE(40)] "Requesting media stream with constraints", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Starting audio stream with options: [object Object] (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133105.918300:INFO:CONSOLE(40)] "Starting audio stream with options: [object Object]", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Attempting to capture microphone (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133105.918375:INFO:CONSOLE(40)] "Attempting to capture microphone", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+Renderer info: Requesting media stream with constraints (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js:40)
+[3232:0225/133105.918427:INFO:CONSOLE(40)] "Requesting media stream with constraints", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-be899e53.js (40)
+[3232:0225/133105.919103:ERROR:bad_message.cc(29)] Terminating renderer for bad IPC message, reason 263
+Renderer process killed - see https://www.electronjs.org/docs/tutorial/application-debugging for potential debugging information.
+Renderer process gone: killed { reason: 'killed', exitCode: 3 }
+Creating main window...
+Loading app from production build
+Renderer info: Preload script starting (/Users/rocket/interview helper/dist/main/preload.js:4)
+[3232:0225/133232.045055:INFO:CONSOLE(4)] "Preload script starting", source: /Users/rocket/interview helper/dist/main/preload.js (4)
+Renderer info: Setting up contextBridge (/Users/rocket/interview helper/dist/main/preload.js:8)
+[3232:0225/133232.045116:INFO:CONSOLE(8)] "Setting up contextBridge", source: /Users/rocket/interview helper/dist/main/preload.js (8)
+Renderer info: Exposing electronReady flag (/Users/rocket/interview helper/dist/main/preload.js:61)
+[3232:0225/133232.045192:INFO:CONSOLE(61)] "Exposing electronReady flag", source: /Users/rocket/interview helper/dist/main/preload.js (61)
+Renderer info: Preload script finished (/Users/rocket/interview helper/dist/main/preload.js:63)
+[3232:0225/133232.045231:INFO:CONSOLE(63)] "Preload script finished", source: /Users/rocket/interview helper/dist/main/preload.js (63)
+Renderer info: Renderer process starting (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.057158:INFO:CONSOLE(40)] "Renderer process starting", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: electronReady: true (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.057229:INFO:CONSOLE(40)] "electronReady: true", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: electronAPI: [object Object] (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.057271:INFO:CONSOLE(40)] "electronAPI: [object Object]", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Electron is ready, rendering immediately (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.057311:INFO:CONSOLE(40)] "Electron is ready, rendering immediately", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Rendering app now (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.057363:INFO:CONSOLE(40)] "Rendering app now", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Root element: [object HTMLDivElement] (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.057400:INFO:CONSOLE(40)] "Root element: [object HTMLDivElement]", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: App rendered (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.058135:INFO:CONSOLE(40)] "App rendered", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: AudioCapture component rendering (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.063988:INFO:CONSOLE(40)] "AudioCapture component rendering", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer warning: %cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has "webSecurity" disabled. This
+  exposes users of this app to severe security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[3232:0225/133232.064864:INFO:CONSOLE(2)] "%cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has "webSecurity" disabled. This
+  exposes users of this app to severe security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/renderer_init (2)
+Renderer warning: %cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has "allowRunningInsecureContent"
+  enabled. This exposes users of this app to severe security risks.
+
+  
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[3232:0225/133232.064924:INFO:CONSOLE(2)] "%cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has "allowRunningInsecureContent"
+  enabled. This exposes users of this app to severe security risks.
+
+  
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/renderer_init (2)
+Renderer info: AudioCapture component mounted, checking electronAPI (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.065200:INFO:CONSOLE(40)] "AudioCapture component mounted, checking electronAPI", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: AudioCapture: electronAPI available, setting up event handlers (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.065257:INFO:CONSOLE(40)] "AudioCapture: electronAPI available, setting up event handlers", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Setting up audio stream event handlers (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.065293:INFO:CONSOLE(40)] "Setting up audio stream event handlers", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Successfully registered start audio stream handler (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.065341:INFO:CONSOLE(40)] "Successfully registered start audio stream handler", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Successfully registered stop audio stream handler (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.065374:INFO:CONSOLE(40)] "Successfully registered stop audio stream handler", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Current microphone permission status: granted
+Current microphone permission status: granted
+Renderer info: AudioCapture component rendering (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133232.113061:INFO:CONSOLE(40)] "AudioCapture component rendering", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+[3232:0225/133232.127204:WARNING:CONSOLE(2)] "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/sandbox_bundle (2)
+Creating main window...
+Loading app from production build
+Renderer info: Preload script starting (/Users/rocket/interview helper/dist/main/preload.js:4)
+[3232:0225/133310.023607:INFO:CONSOLE(4)] "Preload script starting", source: /Users/rocket/interview helper/dist/main/preload.js (4)
+Renderer info: Setting up contextBridge (/Users/rocket/interview helper/dist/main/preload.js:8)
+[3232:0225/133310.023673:INFO:CONSOLE(8)] "Setting up contextBridge", source: /Users/rocket/interview helper/dist/main/preload.js (8)
+Renderer info: Exposing electronReady flag (/Users/rocket/interview helper/dist/main/preload.js:61)
+[3232:0225/133310.023730:INFO:CONSOLE(61)] "Exposing electronReady flag", source: /Users/rocket/interview helper/dist/main/preload.js (61)
+Renderer info: Preload script finished (/Users/rocket/interview helper/dist/main/preload.js:63)
+[3232:0225/133310.023769:INFO:CONSOLE(63)] "Preload script finished", source: /Users/rocket/interview helper/dist/main/preload.js (63)
+Renderer info: Renderer process starting (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.035447:INFO:CONSOLE(40)] "Renderer process starting", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: electronReady: true (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.035504:INFO:CONSOLE(40)] "electronReady: true", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: electronAPI: [object Object] (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.035548:INFO:CONSOLE(40)] "electronAPI: [object Object]", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Electron is ready, rendering immediately (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.035609:INFO:CONSOLE(40)] "Electron is ready, rendering immediately", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Rendering app now (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.035657:INFO:CONSOLE(40)] "Rendering app now", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Root element: [object HTMLDivElement] (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.035695:INFO:CONSOLE(40)] "Root element: [object HTMLDivElement]", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: App rendered (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.036473:INFO:CONSOLE(40)] "App rendered", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: AudioCapture component rendering (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.042596:INFO:CONSOLE(40)] "AudioCapture component rendering", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+[3232:0225/133310.186468:WARNING:CONSOLE(2)] "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/sandbox_bundle (2)
+Renderer warning: %cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has "webSecurity" disabled. This
+  exposes users of this app to severe security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[3232:0225/133310.209963:INFO:CONSOLE(2)] "%cElectron Security Warning (Disabled webSecurity) font-weight: bold; This renderer process has "webSecurity" disabled. This
+  exposes users of this app to severe security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/renderer_init (2)
+Renderer warning: %cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has "allowRunningInsecureContent"
+  enabled. This exposes users of this app to severe security risks.
+
+  
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[3232:0225/133310.210082:INFO:CONSOLE(2)] "%cElectron Security Warning (allowRunningInsecureContent) font-weight: bold; This renderer process has "allowRunningInsecureContent"
+  enabled. This exposes users of this app to severe security risks.
+
+  
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/renderer_init (2)
+Renderer info: AudioCapture component mounted, checking electronAPI (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.210213:INFO:CONSOLE(40)] "AudioCapture component mounted, checking electronAPI", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: AudioCapture: electronAPI available, setting up event handlers (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.210278:INFO:CONSOLE(40)] "AudioCapture: electronAPI available, setting up event handlers", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Setting up audio stream event handlers (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.210377:INFO:CONSOLE(40)] "Setting up audio stream event handlers", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Successfully registered start audio stream handler (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.210425:INFO:CONSOLE(40)] "Successfully registered start audio stream handler", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: Successfully registered stop audio stream handler (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.210503:INFO:CONSOLE(40)] "Successfully registered stop audio stream handler", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Current microphone permission status: granted
+Current microphone permission status: granted
+Renderer info: AudioCapture component rendering (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.241118:INFO:CONSOLE(40)] "AudioCapture component rendering", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: AudioCapture component rendering (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.241488:INFO:CONSOLE(40)] "AudioCapture component rendering", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Renderer info: AudioCapture component rendering (file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js:40)
+[3232:0225/133310.241978:INFO:CONSOLE(40)] "AudioCapture component rendering", source: file:///Users/rocket/interview%20helper/dist/renderer/assets/main-221568ab.js (40)
+Stopping audio capture...
+Database closed

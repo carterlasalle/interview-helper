@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, app, dialog } from "electron";
+import { BrowserWindow, ipcMain, app, dialog, desktopCapturer } from "electron";
 import { getSetting } from "./database";
 import { TranscriptionStatus } from "../../common/types";
 import { 
@@ -10,6 +10,7 @@ import {
 let audioBuffer: Buffer[] = [];
 let isCapturing = false;
 let captureWindow: BrowserWindow | null = null;
+let audioStream: any | null = null;
 
 // For actual audio capture, we would use native bindings
 // This simplified implementation will focus on permission handling
@@ -60,7 +61,10 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
           }
           // If "Continue without system audio", we'll just skip system audio capture
         } else {
-          await startSystemAudioCapture(audioSettings.deviceId);
+          const success = await startSystemAudioCapture(audioSettings.deviceId);
+          if (!success) {
+            return { success: false, error: "Failed to start system audio capture" };
+          }
         }
       }
 
@@ -88,7 +92,10 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
           }
           // If "Continue without microphone", we'll just skip microphone capture
         } else {
-          await startMicrophoneCapture(audioSettings.deviceId);
+          const success = await startMicrophoneCapture(audioSettings.deviceId);
+          if (!success) {
+            return { success: false, error: "Failed to start microphone capture" };
+          }
         }
       }
 
@@ -185,45 +192,84 @@ export const setupAudioCapture = (mainWindow: BrowserWindow) => {
   });
 };
 
-const startSystemAudioCapture = async (deviceId?: string) => {
-  console.log("Starting system audio capture...", deviceId);
+const startSystemAudioCapture = async (deviceId?: string): Promise<boolean> => {
+  console.log("Starting real system audio capture...");
   
-  // In a real implementation, we would:
-  // 1. Initialize the audio capture API (e.g., Core Audio on macOS)
-  // 2. Create an audio stream with the specified device
-  // 3. Set up a callback to process captured audio chunks
-  
-  // For now, we'll use our simulation for development
-  startAudioSimulation();
-  return true;
+  try {
+    // Get available screen sources which can include audio
+    const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] });
+    
+    // Find the system audio source (usually named "System Audio" on macOS)
+    const systemAudioSource = sources.find(source => 
+      source.name.toLowerCase().includes('system') || 
+      source.name.toLowerCase().includes('audio'));
+    
+    if (!systemAudioSource) {
+      console.error("No system audio source found");
+      return false;
+    }
+    
+    console.log("Found system audio source:", systemAudioSource.name);
+    
+    // Pass the source ID to the renderer to create the audio stream
+    // The actual audio capture will happen in the renderer process
+    // We'll send a message to the renderer to start the capture
+    if (captureWindow && !captureWindow.isDestroyed()) {
+      captureWindow.webContents.send('start-audio-stream', {
+        sourceId: systemAudioSource.id,
+        isSystemAudio: true
+      });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error starting system audio capture:", error);
+    return false;
+  }
 };
 
-const startMicrophoneCapture = async (deviceId?: string) => {
-  console.log("Starting microphone capture...", deviceId);
+const startMicrophoneCapture = async (deviceId?: string): Promise<boolean> => {
+  console.log("Starting real microphone capture...");
   
-  // In a real implementation, we would:
-  // 1. Initialize the microphone capture API
-  // 2. Create an audio stream with the specified device
-  // 3. Set up a callback to process captured audio chunks
-  
-  // For now, we don't simulate this separately
-  return true;
+  try {
+    // For microphone capture, we'll use the navigator.getUserMedia API in the renderer
+    // Send a message to the renderer to start microphone capture
+    if (captureWindow && !captureWindow.isDestroyed()) {
+      captureWindow.webContents.send('start-audio-stream', {
+        deviceId: deviceId,
+        isSystemAudio: false
+      });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error starting microphone capture:", error);
+    return false;
+  }
 };
 
-const stopAudioCapture = async () => {
+const stopAudioCapture = async (): Promise<boolean> => {
   console.log("Stopping audio capture...");
   
-  // In a real implementation, we would:
-  // 1. Stop and clean up all audio streams
-  // 2. Release resources
-  
-  stopAudioSimulation();
-  return true;
+  try {
+    // Send a message to the renderer to stop all audio streams
+    if (captureWindow && !captureWindow.isDestroyed()) {
+      captureWindow.webContents.send('stop-audio-stream');
+    }
+    
+    // Clean up any resources in the main process
+    audioBuffer = [];
+    
+    return true;
+  } catch (error) {
+    console.error("Error stopping audio capture:", error);
+    return false;
+  }
 };
 
 const getAudioDevices = async () => {
-  // In a real implementation, we would query the system for available audio devices
   // For now, return mock devices
+  // In a real implementation, we'd query the system
   
   return [
     {
@@ -239,46 +285,19 @@ const getAudioDevices = async () => {
   ];
 };
 
-let simulationInterval: NodeJS.Timeout | null = null;
-
-const startAudioSimulation = () => {
-  if (simulationInterval) return;
-
-  simulationInterval = setInterval(() => {
-    const chunk = Buffer.from(
-      new Array(1024).fill(0).map(() => Math.floor(Math.random() * 256)),
-    );
-
-    audioBuffer.push(chunk);
-
-    if (audioBuffer.length > 100) {
-      audioBuffer.shift();
-    }
-
-    processAudioChunk(chunk);
-  }, 100);
-};
-
-const stopAudioSimulation = () => {
-  if (simulationInterval) {
-    clearInterval(simulationInterval);
-    simulationInterval = null;
-  }
-};
-
 const processAudioChunk = (chunk: Buffer) => {
+  // Store the audio chunk for later processing
+  audioBuffer.push(chunk);
+  
+  // Notify the transcription service about the new audio data
   if (captureWindow && !captureWindow.isDestroyed()) {
-    captureWindow.webContents.send("audio-chunk-received", {
-      size: chunk.length,
-      timestamp: Date.now(),
-    });
+    captureWindow.webContents.send("audio-data", chunk);
   }
 };
 
-// This now uses our utility function
+// This is a utility function that can be exported if needed elsewhere
 export const checkAudioPermissions = async (): Promise<boolean> => {
   const micPermission = await checkMicrophonePermission();
-  const systemPermission = await checkSystemAudioPermission();
-  
-  return micPermission || systemPermission;
+  const systemAudioPermission = await checkSystemAudioPermission();
+  return micPermission && systemAudioPermission;
 };

@@ -6,6 +6,33 @@ import { setupTranscriptionService } from "./services/transcription";
 import { setupLLMService } from "./services/llm";
 import { setupDatabase } from "./services/database";
 
+// Enable more detailed logging
+process.env.ELECTRON_ENABLE_LOGGING = 'true';
+process.env.ELECTRON_DEBUG_LEVEL = 'info';
+
+// Enable ScreenCaptureKit for audio capture on macOS
+if (process.platform === 'darwin') {
+  // Add flags needed for audio capture
+  app.commandLine.appendSwitch('enable-features', 'ScreenCaptureKitPickerScreen,ScreenCaptureKitStreamPickerSonoma');
+  
+  // Disable browser security restrictions
+  app.commandLine.appendSwitch('disable-web-security');
+  app.commandLine.appendSwitch('allow-running-insecure-content');
+  app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+  
+  console.log('Enabled ScreenCaptureKit features on macOS');
+}
+
+// Listen for unhandled promise rejections
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled rejection:', error);
+});
+
+// Listen for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+});
+
 if (squirrel) {
   app.quit();
 }
@@ -14,6 +41,8 @@ let mainWindow: BrowserWindow | null = null;
 let servicesInitialized = false;
 
 const createWindow = async () => {
+  console.log('Creating main window...');
+
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
@@ -21,15 +50,34 @@ const createWindow = async () => {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
+      // Enable debugging
+      devTools: true,
+      // Disable web security and sandbox to fix audio permissions
+      webSecurity: false,
+      allowRunningInsecureContent: true,
+      // Needed for mediaDevices in newer Electron
+      sandbox: false
     },
+  });
+
+  // Open DevTools in both production and development
+  mainWindow.webContents.openDevTools();
+
+  // Log renderer process crashes
+  mainWindow.webContents.on('render-process-gone', (event, details) => {
+    console.error('Renderer process gone:', details.reason, details);
+  });
+
+  // Log renderer error messages
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    const levels = ['debug', 'info', 'warning', 'error'];
+    console.log(`Renderer ${levels[level]}:`, message, `(${sourceId}:${line})`);
   });
 
   if (process.env.NODE_ENV === "development") {
     console.log("Loading app from development server on port 3001");
     try {
       await mainWindow.loadURL("http://localhost:3001/");
-      // Always open dev tools in development mode
-      mainWindow.webContents.openDevTools();
       console.log("Development URL loaded successfully");
     } catch (error) {
       console.error("Failed to load development URL:", error);
@@ -43,6 +91,7 @@ const createWindow = async () => {
   }
 
   if (!servicesInitialized && mainWindow) {
+    console.log('Initializing services...');
     setupAudioCapture(mainWindow);
     setupTranscriptionService(mainWindow);
     setupLLMService(mainWindow);
@@ -59,6 +108,7 @@ const createWindow = async () => {
 };
 
 app.whenReady().then(() => {
+  console.log('App ready, creating window...');
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -97,6 +147,12 @@ ipcMain.handle("set-setting", async (event, key, value) => {
     console.error(`Error setting ${key}:`, error);
     return false;
   }
+});
+
+// Debug IPC messages
+ipcMain.on('audio-data', (event, data) => {
+  // Log only length to avoid flooding console
+  console.log(`Received audio data: ${data.length} bytes`);
 });
 
 if (process.env.NODE_ENV === "development") {
